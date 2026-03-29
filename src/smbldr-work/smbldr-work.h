@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <windows.h>
+#pragma comment(lib, "shlwapi.lib")
 
 #ifndef MAIN_H
 #define MAIN_H
@@ -215,29 +216,24 @@ PCWSTR StrStrIW(
 size_t GetModHandle(wchar_t* ln) {
     PEB* pPeb = (PEB*)__readgsqword(0x60);
     PLIST_ENTRY header = &(pPeb->Ldr->InMemoryOrderModuleList);
-    i("%p\n", pPeb);
-    i("%p\n", header);
 
 
 
     for (PLIST_ENTRY curr = header->Flink; curr != header; curr = curr->Flink) {
-        i("%p", curr);
         LDR_DATA_TABLE_ENTRY* data = CONTAINING_RECORD(curr, LDR_DATA_TABLE_ENTRY, InMemoryOrderLinks);
 
-        i("current node is: %ls\n", data->FullDllName.Buffer);
 
         if (StrStrIW(ln, data->FullDllName.Buffer)) {
-            e("%ls is a match to %ls.", data->FullDllName.Buffer, ln);
 
             return (size_t)data->DllBase;
         }
         else {
-            e("%ls is not a match to %ls\n", data->FullDllName.Buffer, ln);
+            printf("error\n");
         }
 
 
     }
-    e("returning NULL value, failed to get dll");
+
     return 0;
 
 }
@@ -251,7 +247,6 @@ size_t GetFuncAddr(size_t modb, char* fn) {
 
     PIMAGE_EXPORT_DIRECTORY exportTable = (PIMAGE_EXPORT_DIRECTORY)(modb + data_Dir.VirtualAddress);
 
-    i("Export Table: %p\n", exportTable);
     DWORD* arrf = (DWORD*)(modb + exportTable->AddressOfFunctions);
     DWORD* arrn = (DWORD*)(modb + exportTable->AddressOfNames);
     WORD* arrno = (WORD*)(modb + exportTable->AddressOfNameOrdinals);
@@ -260,13 +255,10 @@ size_t GetFuncAddr(size_t modb, char* fn) {
         char* name = (char*)(modb + arrn[i]);
 
         WORD ordinalIndex = arrno[i];
-        i("Checking function: %s (ordinal index: %d)", name, ordinalIndex);
 
 
         if (!stricmp(name, fn)) {
-            g("Found function %s at ordinal index %d", name, ordinalIndex);
             size_t funcAddr = modb + arrf[ordinalIndex];
-            g("Function address: 0x%p", funcAddr);
             return funcAddr;
         }
 

